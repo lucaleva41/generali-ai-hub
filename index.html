@@ -166,7 +166,43 @@
   </style>
 </head>
 <body>
-  <div class="app">
+  <!-- GATE LOGIN (demo: solo lato client) -->
+  <div id="loginGate" style="position:fixed; inset:0; display:none; place-items:center; padding:20px; background:radial-gradient(900px 600px at 20% 10%, rgba(77,163,255,.18), transparent 55%), rgba(0,0,0,.72); backdrop-filter: blur(10px); z-index:9999;">
+    <div style="width:min(520px, 92vw); border-radius:22px; border:1px solid rgba(255,255,255,.10); background:linear-gradient(180deg, rgba(15,22,33,.92), rgba(12,18,27,.86)); box-shadow: 0 20px 60px rgba(0,0,0,.55); padding:18px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; border-radius:12px; background:linear-gradient(135deg, rgba(77,163,255,.95), rgba(61,220,151,.85));"></div>
+        <div>
+          <div style="font-size:14px; font-weight:700; letter-spacing:.2px;">Accesso — Generali AI Hub</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px;">Inserisci le credenziali interne per continuare.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px; display:grid; gap:10px;">
+        <label style="display:grid; gap:6px; font-size:12px; color:var(--muted);">
+          Nome utente
+          <input id="loginUser" autocomplete="username" placeholder="es. mario.rossi" style="padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); color:var(--text); outline:none;" />
+        </label>
+        <label style="display:grid; gap:6px; font-size:12px; color:var(--muted);">
+          Password
+          <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" style="padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); color:var(--text); outline:none;" />
+        </label>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:6px;">
+          <small id="loginHint" style="color:var(--muted);">Demo: protezione base. Per sicurezza reale: SSO / backend / Cloudflare Access.</small>
+          <button class="btn primary" id="loginBtn" type="button">Entra</button>
+        </div>
+
+        <div id="loginError" style="display:none; margin-top:6px; padding:10px; border-radius:14px; border:1px solid rgba(255,107,107,.35); background:rgba(255,107,107,.10); color:#ffd0d0; font-size:12px;">Credenziali non valide.</div>
+      </div>
+
+      <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.07); display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <small style="color:var(--muted);">Modalità sviluppo: aggiungi <b>?dev=1</b> all’URL per bypassare il login mentre lavoriamo.</small>
+        <button class="btn" id="clearSession" type="button">Reset sessione</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app" id="appRoot">
     <aside class="sidebar">
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
@@ -269,5 +305,110 @@
       </section>
     </main>
   </div>
+  <script>
+    /**
+     * Login “soft” SOLO lato client.
+     * - Utile per demo/intranet leggera.
+     * - NON è sicurezza reale su GitHub Pages (il codice resta accessibile).
+     * Per sicurezza vera: SSO/Backend o Cloudflare Access.
+     */
+    (function(){
+      const gate = document.getElementById('loginGate');
+      const app = document.getElementById('appRoot');
+      const userEl = document.getElementById('loginUser');
+      const passEl = document.getElementById('loginPass');
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('loginError');
+      const who = document.getElementById('who');
+      const reset = document.getElementById('clearSession');
+
+      const params = new URLSearchParams(location.search);
+      const devBypass = params.get('dev') === '1' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+      // Credenziali demo (da sostituire in futuro con backend + ruoli)
+      const DEMO_USERS = {
+        'commerciale': { password: 'Generali2025!', ruolo: 'Commerciale' },
+        'manager': { password: 'Manager2025!', ruolo: 'Manager' },
+        'admin': { password: 'Admin2025!', ruolo: 'Admin' },
+      };
+
+      function setAuthed(session){
+        localStorage.setItem('gaihub_session', JSON.stringify(session));
+      }
+      function getAuthed(){
+        try { return JSON.parse(localStorage.getItem('gaihub_session') || 'null'); } catch { return null; }
+      }
+      function clearAuthed(){
+        localStorage.removeItem('gaihub_session');
+      }
+
+      function showGate(){
+        gate.style.display = 'grid';
+        app.style.filter = 'blur(10px)';
+        app.style.pointerEvents = 'none';
+      }
+      function hideGate(){
+        gate.style.display = 'none';
+        app.style.filter = 'none';
+        app.style.pointerEvents = 'auto';
+      }
+
+      function refreshWho(){
+        const s = getAuthed();
+        if(!who) return;
+        if(s?.ruolo && s?.utente) who.textContent = `${s.ruolo} • ${s.utente}`;
+      }
+
+      // Logout button existing in sidebar
+      const logoutBtn = document.getElementById('logout');
+      logoutBtn?.addEventListener('click', ()=>{
+        clearAuthed();
+        if(!devBypass) showGate();
+        refreshWho();
+      });
+
+      reset?.addEventListener('click', ()=>{
+        clearAuthed();
+        err.style.display='none';
+        userEl.value='';
+        passEl.value='';
+      });
+
+      function attemptLogin(){
+        err.style.display='none';
+        const u = (userEl.value || '').trim().toLowerCase();
+        const p = (passEl.value || '').trim();
+        const rec = DEMO_USERS[u];
+        if(!rec || rec.password !== p){
+          err.style.display='block';
+          return;
+        }
+        setAuthed({ utente: u, ruolo: rec.ruolo, ts: Date.now() });
+        hideGate();
+        refreshWho();
+      }
+
+      btn?.addEventListener('click', attemptLogin);
+      passEl?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') attemptLogin(); });
+
+      // Boot
+      if(devBypass){
+        // In dev bypass, set a friendly session if none exists
+        if(!getAuthed()) setAuthed({ utente:'sviluppo', ruolo:'Sviluppo', ts: Date.now() });
+        hideGate();
+        refreshWho();
+        return;
+      }
+
+      const s = getAuthed();
+      if(s){
+        hideGate();
+      } else {
+        showGate();
+      }
+      refreshWho();
+    })();
+  </script>
 </body>
 </html>
+
