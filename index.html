@@ -3,46 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Generali AI Hub — Dashboard Interna</title>
+  <title>Generali AI Hub</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- GATE LOGIN (demo: solo lato client) -->
-  <div id="loginGate" class="login-gate">
-    <div class="login-card">
-      <div class="login-head">
-        <div class="login-mark" aria-hidden="true"></div>
-        <div>
-          <div class="login-title">Accesso — Generali AI Hub</div>
-          <div class="login-sub">Inserisci le credenziali interne per continuare.</div>
-        </div>
-      </div>
-
-      <div class="login-form">
-        <label class="login-label">
-          Nome utente
-          <input id="loginUser" autocomplete="username" placeholder="es. mario.rossi" />
-        </label>
-
-        <label class="login-label">
-          Password
-          <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" />
-        </label>
-
-        <div class="login-actions">
-          <small id="loginHint">Demo: protezione base. Per sicurezza reale: SSO / backend / Cloudflare Access.</small>
-          <button class="btn primary" id="loginBtn" type="button">Entra</button>
-        </div>
-
-        <div id="loginError" class="login-error">Credenziali non valide.</div>
-      </div>
-
-      <div class="login-foot">
-        <small>Modalità sviluppo: aggiungi <b>?dev=1</b> all’URL per bypassare il login mentre lavoriamo.</small>
-        <button class="btn" id="clearSession" type="button">Reset sessione</button>
-      </div>
-    </div>
-  </div>
+  <!-- In produzione potrai riattivare un gate/login. In DEV lo teniamo spento. -->
+  <div id="loginGate" style="display:none"></div>
 
   <div class="app" id="appRoot">
     <aside class="sidebar">
@@ -50,33 +16,33 @@
         <div class="logo" aria-hidden="true"></div>
         <div>
           <h1>Generali AI Hub</h1>
-          <p>Dashboard interna • stile Notion</p>
+          <p>Dashboard interna</p>
         </div>
       </div>
 
       <nav class="nav" id="nav">
         <h2>Spazio di lavoro</h2>
-        <a href="#" class="active" data-page="home"><span>Home</span><span class="pill">Oggi</span></a>
-        <a href="#" data-page="project"><span>Aggiornamenti progetto</span><span class="pill">3</span></a>
-        <a href="#" data-page="news"><span>News Investimenti & Assicurazioni</span><span class="pill">Nuovo</span></a>
+        <a href="#home" class="active" data-page="home"><span>Home</span><span class="pill">Oggi</span></a>
+        <a href="#project" data-page="project"><span>Aggiornamenti progetto</span><span class="pill">3</span></a>
+        <a href="#news" data-page="news"><span>News Investimenti &amp; Assicurazioni</span><span class="pill">Nuovo</span></a>
 
         <h2>Commerciale</h2>
-        <a href="#" data-page="clients"><span>Analisi Clienti</span><span class="pill">AI</span></a>
-        <a href="#" data-page="leads"><span>Ricerca Lead</span><span class="pill">Beta</span></a>
-        <a href="#" data-page="community"><span>Community</span><span class="pill">Team</span></a>
+        <a href="#clients" data-page="clients"><span>Analisi Clienti</span><span class="pill">AI</span></a>
+        <a href="#leads" data-page="leads"><span>Ricerca Lead</span><span class="pill">Beta</span></a>
+        <a href="#community" data-page="community"><span>Community</span><span class="pill">Team</span></a>
 
         <h2>Personale</h2>
-        <a href="#" data-page="me"><span>La mia dashboard</span><span class="pill">Tu</span></a>
-        <a href="#" data-page="admin"><span>Amministrazione</span><span class="pill">Ruoli</span></a>
+        <a href="#me" data-page="me"><span>La mia dashboard</span><span class="pill">Tu</span></a>
+        <a href="#admin" data-page="admin"><span>Amministrazione</span><span class="pill">Ruoli</span></a>
       </nav>
 
       <div class="bottom">
         <div class="row">
           <div>
             <div style="font-size:12px; font-weight:600;">Accesso effettuato</div>
-            <small id="who">Commerciale • Utente demo</small>
+            <small id="who">Sviluppo • Anteprima</small>
           </div>
-          <button class="btn" id="logout">Esci</button>
+          <button class="btn" id="logout" type="button">Esci</button>
         </div>
       </div>
     </aside>
@@ -88,27 +54,66 @@
           <input id="search" placeholder="Cerca aggiornamenti, clienti, lead, documenti…" />
         </div>
         <div class="actions">
-          <button class="btn" id="quickNote">+ Aggiornamento rapido</button>
-          <button class="btn primary" id="newTask">+ Attività</button>
+          <button class="btn" id="quickNote" type="button">+ Aggiornamento rapido</button>
+          <button class="btn primary" id="newTask" type="button">+ Attività</button>
         </div>
       </div>
 
+      <!-- ================= HOME ================= -->
       <section class="page active" id="page-home">
         <div class="grid cols-3">
           <div class="card">
-            <h3>Focus settimanale</h3>
-            <p>Allineamento su priorità, blocchi e risultati.</p>
-            <div class="list" id="focusList"></div>
-          </div>
-
-          <div class="card">
-            <div class="kpi">
+            <div class="row" style="justify-content:space-between; align-items:flex-end; gap:10px;">
               <div>
-                <h3>Appuntamenti fissati</h3>
-                <div class="value" id="kpiAppointments">14</div>
-                <div class="meta"><span class="tag ok">+12% sett.</span><span>Agenzia</span></div>
+                <h3 style="margin-bottom:4px;">Agenda</h3>
+                <p style="margin:0;">Appuntamenti e attività pianificate. (Demo)</p>
               </div>
-              <div class="tag">Ultimi 7gg</div>
+              <div class="tabs" id="agendaTabs" style="margin:0;">
+                <button class="tab active" type="button" data-agenda="today">Oggi</button>
+                <button class="tab" type="button" data-agenda="week">Settimana</button>
+              </div>
+            </div>
+
+            <div class="list" id="agendaList">
+              <div class="agenda-panel" data-agenda-panel="today">
+                <div class="item">
+                  <div class="left">
+                    <div class="dot ok"></div>
+                    <div>
+                      <h4>09:30 — Cliente A</h4>
+                      <small>Incontro • Preparare proposta • Ramo: Vita</small>
+                    </div>
+                  </div>
+                  <span class="tag">Oggi</span>
+                </div>
+                <div class="item">
+                  <div class="left">
+                    <div class="dot warn"></div>
+                    <div>
+                      <h4>15:00 — Cliente B</h4>
+                      <small>Call • Follow-up • Ramo: Investimenti</small>
+                    </div>
+                  </div>
+                  <span class="tag warn">Da fare</span>
+                </div>
+                <div class="item">
+                  <div class="left">
+                    <div class="dot"></div>
+                    <div>
+                      <h4>—</h4>
+                      <small>Nessun altro appuntamento in agenda</small>
+                    </div>
+                  </div>
+                  <span class="tag">Info</span>
+                </div>
+              </div>
+
+              <div class="agenda-panel" data-agenda-panel="week" style="display:none;">
+                <div class="item"><div class="left"><div class="dot ok"></div><div><h4>Lun 09:30 — Cliente A</h4><small>Incontro • Ramo: Vita</small></div></div><span class="tag">Lun</span></div>
+                <div class="item"><div class="left"><div class="dot warn"></div><div><h4>Mar 15:00 — Cliente B</h4><small>Call • Follow-up • Ramo: Investimenti</small></div></div><span class="tag warn">Mar</span></div>
+                <div class="item"><div class="left"><div class="dot"></div><div><h4>Gio 11:00 — Cliente C</h4><small>Documenti • Ramo: Danni</small></div></div><span class="tag">Gio</span></div>
+                <div class="item"><div class="left"><div class="dot"></div><div><h4>—</h4><small>Nessun altro appuntamento segnato</small></div></div><span class="tag">Info</span></div>
+              </div>
             </div>
           </div>
 
@@ -116,37 +121,282 @@
             <div class="kpi">
               <div>
                 <h3>Valore pipeline</h3>
-                <div class="value" id="kpiPipeline">€ 82.4k</div>
-                <div class="meta"><span class="tag warn">Richiede follow-up</span><span>Trattative aperte</span></div>
+                <div class="value" id="kpiPipeline">€ 0</div>
+                <div class="meta"><span class="tag">Trattative aperte</span><span id="kpiDeals">0 deal</span></div>
               </div>
-              <div class="tag">Live</div>
+              <div class="tag">Live (fase 2)</div>
+            </div>
+            <div class="list" style="margin-top:10px;">
+              <div class="item"><div class="left"><div class="dot warn"></div><div><h4>Follow-up</h4><small>Da fare: <b id="kpiFollowups">0</b></small></div></div><span class="tag warn">Priorità</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="kpi">
+              <div>
+                <h3>Valore portafoglio</h3>
+                <div class="value" id="kpiPortfolio">€ 0</div>
+                <div class="meta"><span class="tag ok">Stabile</span><span>Base clienti</span></div>
+              </div>
+              <div class="tag">Agenzia</div>
+            </div>
+            <div class="list" style="margin-top:10px;">
+              <div class="item"><div class="left"><div class="dot ok"></div><div><h4>Chiusure attese</h4><small>Valore stimato: <b id="kpiExpected">€ 0</b></small></div></div><span class="tag ok">Target</span></div>
             </div>
           </div>
         </div>
 
         <div class="grid cols-2" style="margin-top:14px;">
           <div class="card">
-            <h3>Stato del progetto</h3>
-            <p>Ultimi aggiornamenti da Luca e dal team.</p>
-            <div class="tabs" id="pulseTabs">
-              <button class="tab active" data-filter="all">Tutti</button>
-              <button class="tab" data-filter="commercial">Commerciale</button>
-              <button class="tab" data-filter="admin">Amministrativo</button>
-              <button class="tab" data-filter="training">Formazione</button>
+            <h3>Pipeline per ramo</h3>
+            <p>Vista rapida per capire dove spingere. (Demo)</p>
+            <div class="list">
+              <div class="item"><div class="left"><div class="dot ok"></div><div><h4>Vita</h4><small>Pipeline: <b>€ 0</b> • Attese: <b>€ 0</b></small></div></div><span class="tag">Ramo</span></div>
+              <div class="item"><div class="left"><div class="dot warn"></div><div><h4>Investimenti / Risparmio</h4><small>Pipeline: <b>€ 0</b> • Attese: <b>€ 0</b></small></div></div><span class="tag">Ramo</span></div>
+              <div class="item"><div class="left"><div class="dot"></div><div><h4>Danni</h4><small>Pipeline: <b>€ 0</b> • Attese: <b>€ 0</b></small></div></div><span class="tag">Ramo</span></div>
             </div>
-            <div class="list" id="pulseList"></div>
           </div>
 
           <div class="card">
             <h3>Prossime azioni</h3>
-            <p>Suggerimenti personalizzati (demo).</p>
-            <div class="list" id="nextList"></div>
+            <p>Operativo: cosa fare adesso. (Demo)</p>
+            <div class="list" id="nextActions">
+              <div class="item"><div class="left"><div class="dot warn"></div><div><h4>Preparare proposta — Cliente A</h4><small>Apri scheda cliente e aggiorna note</small></div></div><span class="tag warn">Oggi</span></div>
+              <div class="item"><div class="left"><div class="dot"></div><div><h4>Rivedere pipeline settimanale</h4><small>Controlla trattative e follow-up</small></div></div><span class="tag">Check</span></div>
+              <div class="item"><div class="left"><div class="dot ok"></div><div><h4>Leggere briefing mercati</h4><small>Vai a News per gli insight</small></div></div><span class="tag ok">5 min</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3>Accessi rapidi</h3>
+          <p>Vai subito dove ti serve.</p>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn" type="button" data-jump="clients">🔍 Analisi clienti</button>
+            <button class="btn" type="button" data-jump="leads">🧲 Ricerca lead</button>
+            <button class="btn" type="button" data-jump="news">📰 News &amp; mercati</button>
+            <button class="btn primary" type="button" data-jump="project">🧭 Aggiornamenti progetto</button>
           </div>
         </div>
       </section>
+
+      <!-- ================= PROJECT ================= -->
+      <section class="page" id="page-project">
+        <div class="card">
+          <h3>Aggiornamenti progetto</h3>
+          <p>Roadmap, decisioni, progressi e link agli strumenti. (Placeholder)</p>
+        </div>
+        <div class="grid cols-2" style="margin-top:14px;">
+          <div class="card">
+            <h3>Roadmap</h3>
+            <div class="list">
+              <div class="item"><div class="left"><div class="dot ok"></div><div><h4>Navigazione pagine</h4><small>Home / Progetto / News / Clienti / Lead / Community / Me / Admin</small></div></div><span class="tag ok">OK</span></div>
+              <div class="item"><div class="left"><div class="dot warn"></div><div><h4>Contenuti per pagina</h4><small>Template e componenti riutilizzabili</small></div></div><span class="tag warn">Prossimo</span></div>
+              <div class="item"><div class="left"><div class="dot"></div><div><h4>Connessioni dati</h4><small>Calendari, pipeline, news (fase 2)</small></div></div><span class="tag">Futuro</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Link rapidi</h3>
+            <div class="list">
+              <div class="item"><div class="left"><div class="dot"></div><div><h4>Prompt pack interno</h4><small>Standard operativi per i commerciali</small></div></div><span class="tag">Apri</span></div>
+              <div class="item"><div class="left"><div class="dot"></div><div><h4>Strumenti</h4><small>ChatGPT, Gemini, Notion, Metodo, Comunica (da definire)</small></div></div><span class="tag">Apri</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= NEWS ================= -->
+      <section class="page" id="page-news">
+        <div class="card">
+          <h3>News investimenti &amp; assicurazioni</h3>
+          <p>Feed interno con notizie rilevanti (Generali + mercato). In futuro: email scanning + tagging. (Placeholder)</p>
+        </div>
+        <div class="card" style="margin-top:14px;">
+          <h3>Ultime (demo)</h3>
+          <div class="list">
+            <div class="item"><div class="left"><div class="dot ok"></div><div><h4>Mercati: aggiornamento settimanale</h4><small>Focus su tassi, inflazione, trend investimenti</small></div></div><span class="tag">Leggi</span></div>
+            <div class="item"><div class="left"><div class="dot warn"></div><div><h4>Assicurazioni: insight</h4><small>Nuove opportunità cross-sell / up-sell</small></div></div><span class="tag">Leggi</span></div>
+            <div class="item"><div class="left"><div class="dot"></div><div><h4>Generali: comunicazioni interne</h4><small>Newsletter / comunicazioni di direzione</small></div></div><span class="tag">Leggi</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= CLIENTS ================= -->
+      <section class="page" id="page-clients">
+        <div class="card">
+          <h3>Analisi clienti</h3>
+          <p>Checklist, log contatti, prossima azione e % di chiusura spiegabile + Toolkit AI (zero costi).</p>
+        </div>
+
+        <div class="grid cols-2" style="margin-top:14px;">
+          <div class="card">
+            <h3>Clienti (demo)</h3>
+            <div class="list" id="clientList">
+              <div class="item" data-client="Cliente A"><div class="left"><div class="dot ok"></div><div><h4>Cliente A</h4><small>Ramo: Vita</small></div></div><span class="tag ok">—%</span></div>
+              <div class="item" data-client="Cliente B"><div class="left"><div class="dot warn"></div><div><h4>Cliente B</h4><small>Ramo: Investimenti</small></div></div><span class="tag warn">—%</span></div>
+              <div class="item" data-client="Cliente C"><div class="left"><div class="dot"></div><div><h4>Cliente C</h4><small>Ramo: Danni</small></div></div><span class="tag">—%</span></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <span class="tag">Suggerimento</span>
+              <small style="color:var(--muted);">Clicca un cliente per vedere/aggiornare la scheda.</small>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="scoreWrap">
+              <div>
+                <h3 id="clientTitle">Dettaglio cliente</h3>
+                <p id="clientSubtitle">Seleziona un cliente a sinistra.</p>
+                <div class="row" style="margin-top:8px;">
+                  <span class="tag" id="clientBranch">Ramo: —</span>
+                  <span class="tag" id="clientStage">Stato: —</span>
+                </div>
+              </div>
+
+              <div class="ring" id="closeRing" aria-label="Probabilità di chiusura">
+                <div class="inner">
+                  <div class="pct" id="closePct">—%</div>
+                  <div class="lbl">Chiusura</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hint">La % è spiegabile: checklist (80) + freschezza contatto (10) + prossima azione (10).</div>
+
+            <div class="split">
+              <div>
+                <h3 style="margin:0 0 6px;">Checklist operativa</h3>
+                <p style="margin:0;">Spunta ciò che è vero: la % si aggiorna in tempo reale.</p>
+                <div class="checkGrid" id="checklistGrid"></div>
+              </div>
+
+              <div>
+                <h3 style="margin:14px 0 6px;">Log contatti &amp; prossima azione</h3>
+                <p style="margin:0;">Dati leggeri (non CRM). Auto-save per cliente.</p>
+
+                <div class="formRow">
+                  <div class="field">
+                    <label>Ultimo contatto (data)</label>
+                    <input id="lastDate" type="date" />
+                  </div>
+                  <div class="field">
+                    <label>Canale</label>
+                    <select id="lastChannel">
+                      <option value="">—</option>
+                      <option>Call</option>
+                      <option>Incontro</option>
+                      <option>WhatsApp</option>
+                      <option>Email</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="formRow">
+                  <div class="field">
+                    <label>Esito</label>
+                    <select id="lastOutcome">
+                      <option value="">—</option>
+                      <option value="positivo">Positivo</option>
+                      <option value="neutro">Neutro</option>
+                      <option value="negativo">Negativo</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Scadenza prossima azione</label>
+                    <input id="nextDue" type="date" />
+                  </div>
+                </div>
+
+                <div class="field" style="margin-top:10px;">
+                  <label>Prossima azione (1 frase)</label>
+                  <input id="nextAction" type="text" placeholder="Es: Inviare proposta Vita + fissare call con coniuge" />
+                </div>
+
+                <div class="row" style="margin-top:10px; justify-content:space-between;">
+                  <span class="tag">Auto-save</span>
+                  <button class="btn" type="button" id="clientReset">Reset cliente</button>
+                </div>
+
+                <h3 style="margin:14px 0 6px;">Perché questa %</h3>
+                <div class="breakdown" id="breakdownList"></div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:14px; padding:12px; border-radius:16px;">
+              <h3 style="margin:0 0 6px;">Toolkit AI (zero costi)</h3>
+              <p style="margin:0;">Genera un prompt personalizzato da usare su ChatGPT (copia/incolla).</p>
+
+              <div class="row" style="margin-top:10px; gap:10px;">
+                <span class="tag">Analisi</span>
+                <select id="aiMode" style="flex:1; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); color:var(--text); outline:none;">
+                  <option value="followup">Follow-up perfetto</option>
+                  <option value="obiezioni">Gestione obiezioni</option>
+                  <option value="chiusura">Probabilità di chiusura + prossimi step</option>
+                  <option value="sentiment">Sentiment &amp; rischi</option>
+                </select>
+              </div>
+
+              <label style="display:grid; gap:6px; margin-top:10px; font-size:12px; color:var(--muted);">
+                Note rapide
+                <textarea id="aiNotes" rows="3" placeholder="Es: Cliente interessato ma indeciso, teme vincoli. Vuole rivedere tra 1 settimana…" style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); color:var(--text); outline:none; resize:vertical;"></textarea>
+              </label>
+
+              <div class="row" style="margin-top:10px; justify-content:space-between;">
+                <button class="btn" type="button" id="aiGenerate">Genera prompt</button>
+                <div class="row" style="gap:10px;">
+                  <a class="btn" id="aiOpenChatGPT" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Apri ChatGPT</a>
+                  <button class="btn primary" type="button" id="aiCopy">Copia</button>
+                </div>
+              </div>
+
+              <label style="display:grid; gap:6px; margin-top:10px; font-size:12px; color:var(--muted);">
+                Prompt pronto
+                <textarea id="aiPrompt" rows="6" readonly style="width:100%; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.02); color:var(--text); outline:none; resize:vertical;"></textarea>
+              </label>
+
+              <small style="color:var(--muted);">Il sito non chiama API: genera prompt e tu lo incolli su ChatGPT.</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= LEADS ================= -->
+      <section class="page" id="page-leads">
+        <div class="card">
+          <h3>Ricerca lead</h3>
+          <p>Toolkit + fonti + tracking opportunità. (Placeholder)</p>
+        </div>
+      </section>
+
+      <!-- ================= COMMUNITY ================= -->
+      <section class="page" id="page-community">
+        <div class="card">
+          <h3>Community</h3>
+          <p>Spazio Q&amp;A interno (Placeholder).</p>
+        </div>
+      </section>
+
+      <!-- ================= ME ================= -->
+      <section class="page" id="page-me">
+        <div class="card">
+          <h3>La mia dashboard</h3>
+          <p>Widget personali (Placeholder).</p>
+        </div>
+      </section>
+
+      <!-- ================= ADMIN ================= -->
+      <section class="page" id="page-admin">
+        <div class="card">
+          <h3>Amministrazione</h3>
+          <p>Ruoli e permessi (Placeholder).</p>
+        </div>
+      </section>
+
     </main>
   </div>
 
-  <script src="app.js" defer></script>
+  <div id="devBadge" class="dev-badge" aria-live="polite"></div>
+
+  <script src="app.js"></script>
 </body>
 </html>
